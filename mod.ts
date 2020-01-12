@@ -1,10 +1,5 @@
-/** Generic doc. */
-export interface Doc {
-  [key: string]: any;
-}
-
-/** Derive configuration. */
-export interface GetConfig {
+/** Derive options. */
+export interface GetOptions {
   profile?: string; // which profile to load
   sharedCredentialsFile?: string; // path to the shared credentials file
   configFile?: string; // path to the config file
@@ -15,7 +10,7 @@ export interface GetConfig {
 /** Shared decoder. */
 const dcdr: TextDecoder = new TextDecoder();
 
-/** Camelize. */
+/** Normalizes config keys (from snake to camel case). */
 function normalizeKey(key: string): string {
   return key
     .toLowerCase()
@@ -27,18 +22,21 @@ function normalizeKey(key: string): string {
     .join("");
 }
 
-/** Parzz. */
-function parse(file: string): Doc {
+/** Parses config and credential files. */
+function parse(file: string) {
   return dcdr
     .decode(Deno.readFileSync(file))
     .split(/\r?\n/)
     .map((line: string): string => line.trim())
     .reduce(
-      ([oldProfile, acc]: [string, Doc], line: string): [string, Doc] => {
+      (
+        [oldProfile, acc]: [string, { [key: string]: any }],
+        line: string
+      ): [string, { [key: string]: any }] => {
         let newProfile: string;
 
         if (line.startsWith("[")) {
-          newProfile = line.slice(1, line.length - 2).trim();
+          newProfile = line.slice(1, line.length - 1).trim();
 
           acc[newProfile] = {};
         } else {
@@ -53,22 +51,24 @@ function parse(file: string): Doc {
 
         return [newProfile || oldProfile, acc];
       },
-      ["default", {}]
+      ["default", { default: {} }]
     )[1];
 }
 
 /** Derives aws config from the environment and/or filesystem. */
-export function get(conf?: GetConfig): Doc {
-  const _conf: Doc = {
+export function get(opts?: GetOptions): { [key: string]: string } {
+  const home: string = Deno.dir("home");
+
+  const _conf: { [key: string]: any } = {
     profile: "default",
-    sharedCredentialsFile: `${Deno.homeDir()}/.aws/credentials`,
-    configFile: `${Deno.homeDir()}/.aws/config`,
+    sharedCredentialsFile: `${home}/.aws/credentials`,
+    configFile: `${home}/.aws/config`,
     env: true,
     fs: true,
-    ...conf
+    ...opts
   };
 
-  let env: Doc = {};
+  let env: { [key: string]: any } = {};
 
   if (_conf.env) {
     env = Deno.env();
@@ -88,16 +88,21 @@ export function get(conf?: GetConfig): Doc {
   }
 
   if (_conf.fs) {
-    const profile: string = conf.profile || env.AWS_PROFILE || _conf.profile;
+    const profile: string = opts.profile || env.AWS_PROFILE || _conf.profile;
+
     const credsFile: string =
-      conf.sharedCredentialsFile ||
+      opts.sharedCredentialsFile ||
       env.AWS_SHARED_CREDENTIALS_FILE ||
       _conf.sharedCredentialsFile;
-    const configFile: string =
-      conf.configFile || env.AWS_CONFIG_FILE || _conf.configFile;
 
-    const creds: Doc = parse(credsFile);
-    const config: Doc = parse(configFile);
+    const configFile: string =
+      opts.configFile || env.AWS_CONFIG_FILE || _conf.configFile;
+
+    const creds: { [key: string]: any } = parse(credsFile);
+    const config: { [key: string]: any } = parse(configFile);
+
+    creds[profile] = creds[profile] || {};
+    config[profile] = config[profile] || {};
 
     return {
       ...config[profile],
@@ -105,19 +110,25 @@ export function get(conf?: GetConfig): Doc {
       accessKeyId:
         env.AWS_ACCESS_KEY_ID ||
         creds[profile].accessKeyId ||
-        config[profile].accessKeyId,
+        config[profile].accessKeyId ||
+        undefined,
       secretAccessKey:
         env.AWS_SECRET_ACCESS_KEY ||
         creds[profile].secretAccessKey ||
-        config[profile].secretAccessKey,
+        config[profile].secretAccessKey ||
+        undefined,
       sessionToken:
         env.AWS_SESSION_TOKEN ||
         creds[profile].sessionToken ||
-        config[profile].sessionToken,
+        config[profile].sessionToken ||
+        undefined,
       region:
         env.AWS_DEFAULT_REGION ||
         creds[profile].region ||
-        config[profile].region
+        creds[profile].default_region ||
+        config[profile].region ||
+        config[profile].default_region ||
+        undefined
     };
   }
 
