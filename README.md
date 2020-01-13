@@ -7,14 +7,14 @@ Get AWS config and credentials following the "official" AWS CLI strategy.
 ## Usage
 
 ```ts
-import { get } from "https://denopkg.com/chiefbiiko/get-aws-config@v0.1.0/mod.ts";
+import { get } from "https://denopkg.com/chiefbiiko/get-aws-config/mod.ts";
 
 const got = get();
 ```
 
 ## API
 
-#### `get(opts?: GetOptions): { [key: string]: string }`
+#### `get(opts: GetOptions = {}): { [key: string]: string }`
 
 Derive configuration from the environment, and/or filesystem, in that order.
 

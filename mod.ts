@@ -63,7 +63,7 @@ function parse(file: string) {
 }
 
 /** Derives aws config from the environment and/or filesystem. */
-export function get(opts?: GetOptions): { [key: string]: string } {
+export function get(opts: GetOptions = {}): { [key: string]: string } {
   const home: string = Deno.dir("home");
 
   const _conf: { [key: string]: any } = {
