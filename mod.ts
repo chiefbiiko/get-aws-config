@@ -117,25 +117,21 @@ export function get(opts: GetOptions = {}): { [key: string]: string } {
       accessKeyId:
         env.AWS_ACCESS_KEY_ID ||
         creds[profile].accessKeyId ||
-        config[profile].accessKeyId ||
-        undefined,
+        config[profile].accessKeyId,
       secretAccessKey:
         env.AWS_SECRET_ACCESS_KEY ||
         creds[profile].secretAccessKey ||
-        config[profile].secretAccessKey ||
-        undefined,
+        config[profile].secretAccessKey,
       sessionToken:
         env.AWS_SESSION_TOKEN ||
         creds[profile].sessionToken ||
-        config[profile].sessionToken ||
-        undefined,
+        config[profile].sessionToken,
       region:
         env.AWS_DEFAULT_REGION ||
         creds[profile].region ||
         creds[profile].default_region ||
         config[profile].region ||
-        config[profile].default_region ||
-        undefined
+        config[profile].default_region
     };
   }
 
