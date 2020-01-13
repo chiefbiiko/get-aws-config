@@ -24,7 +24,13 @@ function normalizeKey(key: string): string {
 
 /** Parses config and credential files. */
 function parse(file: string) {
-  console.error("FILE", file)
+  // making sure the file exists
+  try {
+    Deno.statSync(file)
+  } catch (_) {
+    return {}
+  }
+  
   return dcdr
     .decode(Deno.readFileSync(file))
     .split(/\r?\n/)

@@ -15,4 +15,4 @@ jobs:
       - name: install deno
         uses: denolib/setup-deno@v1.1.0
       - name: run tests
-        run: pwd && ls && deno run --allow-env --allow-read ./test.ts
+        run: deno run --allow-env --allow-read ./test.ts
