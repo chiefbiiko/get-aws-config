@@ -30,11 +30,12 @@ function parse(file: string) {
   } catch (_) {
     return {}
   }
-  
+
   return dcdr
     .decode(Deno.readFileSync(file))
     .split(/\r?\n/)
     .map((line: string): string => line.trim())
+    .filter((line: string): boolean => line && !line.startsWith("#"))
     .reduce(
       (
         [oldProfile, acc]: [string, { [key: string]: any }],

@@ -1,9 +1,11 @@
 import { get } from "./mod.ts";
 import {
-  assertEquals,
   test,
   runIfMain
-} from "https://deno.land/std@v0.29.0/testing/mod.ts";
+} from "https://deno.land/std/testing/mod.ts";
+import {
+  assertEquals
+} from "https://deno.land/std/testing/asserts.ts";
 
 test({
   name: "returns null if fs and env access are both disabled",
@@ -43,6 +45,20 @@ test({
 
     assertEquals(got.accessKeyId, "YOUR_AWS_ACCESS_KEY_ID");
     assertEquals(got.someOtherConfig, "FRAUD");
+  }
+});
+
+test({
+  name: "parsing handles comments and blank lines",
+  fn() {
+    const got = get({
+      sharedCredentialsFile: "./test_credentials",
+      configFile: "./test_config"
+    });
+
+    assertEquals(got.accessKeyId, "YOUR_AWS_ACCESS_KEY_ID");
+    assertEquals(got.someOtherConfig, "FRAUD");
+    assertEquals(got.moreOtherConfig, "MONEY");
   }
 });
 
