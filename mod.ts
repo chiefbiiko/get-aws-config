@@ -7,6 +7,12 @@ export interface GetOptions {
   fs?: boolean; // whether to check file system
 }
 
+/** Named profile prefix used in config files. */
+const PROFILE_REGEXP: RegExp = /^\s*profile\s*/i;
+
+/** Detecting outter quotes.*/
+const QUOTE_REGEXP: RegExp = /^["']["']$/;
+
 /** Shared decoder. */
 const dcdr: TextDecoder = new TextDecoder();
 
@@ -47,7 +53,7 @@ function parse(file: string) {
           newProfile = line
             .slice(1, line.length - 1)
             .trim()
-            .replace(/^\s*profile\s*/i, "");
+            .replace(PROFILE_REGEXP, "");
 
           if (!acc.hasOwnProperty(newProfile)) {
             acc[newProfile] = {};
@@ -56,7 +62,7 @@ function parse(file: string) {
           const [key, val]: string[] = line
             .split("=")
             .map((part: string): string =>
-              part.trim().replace(/^["']["']$/, "")
+              part.trim().replace(QUOTE_REGEXP, "")
             );
 
           acc[newProfile || oldProfile][normalizeKey(key)] = val;
