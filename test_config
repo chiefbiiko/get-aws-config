@@ -5,7 +5,7 @@ some_other_config = FRAUD
 more_other_config = MONEY
 
 [project2]
-now = THEN
+now = 🔮
 
 [profile project2]
-key = FINALLY_FREE
+key = 🔑

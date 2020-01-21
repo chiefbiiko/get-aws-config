@@ -16,7 +16,7 @@ const got = get();
 
 #### `get(opts: GetOptions = {}): { [key: string]: string }`
 
-Derive configuration from the environment, and/or filesystem, in that order.
+Derive configuration from the environment, the credentials file, and config file, in that order.
 
 **Options**
 

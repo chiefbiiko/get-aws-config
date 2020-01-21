@@ -36,7 +36,7 @@ test({
 });
 
 test({
-  name: "values in the credentials file override those from the config file",
+  name: "the credentials file has precedence over the config file",
   fn() {
     const got = get({
       sharedCredentialsFile: "./test_credentials",
@@ -71,9 +71,9 @@ test({
       profile: "project2"
     });
 
-    assertEquals(got.was, "LOCKED_UP");
-    assertEquals(got.now, "THEN");
-    assertEquals(got.key, "FINALLY_FREE");
+    assertEquals(got.was, "🦜");
+    assertEquals(got.now, "🔮");
+    assertEquals(got.key, "🔑");
   }
 });
 
