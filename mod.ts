@@ -26,9 +26,9 @@ function normalizeKey(key: string): string {
 function parse(file: string) {
   // making sure the file exists
   try {
-    Deno.statSync(file)
+    Deno.statSync(file);
   } catch (_) {
-    return {}
+    return {};
   }
 
   return dcdr
@@ -44,9 +44,14 @@ function parse(file: string) {
         let newProfile: string;
 
         if (line.startsWith("[")) {
-          newProfile = line.slice(1, line.length - 1).trim();
+          newProfile = line
+            .slice(1, line.length - 1)
+            .trim()
+            .replace(/^\s*profile\s*/i, "");
 
-          acc[newProfile] = {};
+          if (!acc.hasOwnProperty(newProfile)) {
+            acc[newProfile] = {};
+          }
         } else {
           const [key, val]: string[] = line
             .split("=")
@@ -136,5 +141,5 @@ export function get(opts: GetOptions = {}): { [key: string]: string } {
     };
   }
 
-  return null;
+  return {};
 }
