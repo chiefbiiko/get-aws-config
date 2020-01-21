@@ -1,5 +1,11 @@
 aws_access_key_id = DIFFERENT_AWS_ACCESS_KEY_ID
 some_other_config = FRAUD
-# stoopid comment
 
+# stoopid comment
 more_other_config = MONEY
+
+[project2]
+now = THEN
+
+[profile project2]
+key = FINALLY_FREE

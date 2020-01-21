@@ -1,16 +1,16 @@
 import { get } from "./mod.ts";
 import {
+  assertEquals,
   test,
   runIfMain
 } from "https://deno.land/std/testing/mod.ts";
-import {
-  assertEquals
-} from "https://deno.land/std/testing/asserts.ts";
+
+Deno.env().AWS_PROFILE = "default";
 
 test({
-  name: "returns null if fs and env access are both disabled",
+  name: "returns an empty object if fs and env access are both disabled",
   fn() {
-    assertEquals(get({ env: false, fs: false }), null);
+    assertEquals(get({ env: false, fs: false }), {});
   }
 });
 
@@ -62,4 +62,19 @@ test({
   }
 });
 
-runIfMain(import.meta);
+test({
+  name: "supports credentials/config named profile formats all over",
+  fn() {
+    const got = get({
+      sharedCredentialsFile: "./test_credentials",
+      configFile: "./test_config",
+      profile: "project2"
+    });
+
+    assertEquals(got.was, "LOCKED_UP");
+    assertEquals(got.now, "THEN");
+    assertEquals(got.key, "FINALLY_FREE");
+  }
+});
+
+runIfMain(import.meta, { only: /formats/ });
