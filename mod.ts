@@ -1,11 +1,14 @@
 /** Derive options. */
 export interface GetOptions {
   profile?: string; // which profile to load
-  sharedCredentialsFile?: string; // path to the shared credentials file
+  credentialsFile?: string; // path to the shared credentials file
   configFile?: string; // path to the config file
   env?: boolean; // whether to check environment
   fs?: boolean; // whether to check file system
 }
+
+/** Home path. */
+const HOME: string = Deno.dir("home");
 
 /** Named profile prefix used in config files. */
 const PROFILE_REGEXP: RegExp = /^\s*profile\s*/i;
@@ -75,75 +78,65 @@ function parse(file: string) {
 }
 
 /** Derives aws config from the environment and/or filesystem. */
-export function get(opts: GetOptions = {}): { [key: string]: string } {
-  const home: string = Deno.dir("home");
+export function get({
+  profile = "default",
+  credentialsFile = `${HOME}/.aws/credentials`,
+  configFile = `${HOME}/.aws/config`,
+  env = true,
+  fs = true
+}: GetOptions = {}): { [key: string]: string } {
+  let ENV: { [key: string]: any } = {};
 
-  const _conf: { [key: string]: any } = {
-    profile: "default",
-    sharedCredentialsFile: `${home}/.aws/credentials`,
-    configFile: `${home}/.aws/config`,
-    env: true,
-    fs: true,
-    ...opts
-  };
-
-  let env: { [key: string]: any } = {};
-
-  if (_conf.env) {
-    env = Deno.env();
+  if (env) {
+    ENV = Deno.env();
 
     if (
-      env.AWS_ACCESS_KEY_ID &&
-      env.AWS_SECRET_ACCESS_KEY &&
-      env.AWS_DEFAULT_REGION
+      ENV.AWS_ACCESS_KEY_ID &&
+      ENV.AWS_SECRET_ACCESS_KEY &&
+      ENV.AWS_DEFAULT_REGION
     ) {
       return {
-        accessKeyId: env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-        sessionToken: env.AWS_SESSION_TOKEN,
-        region: env.AWS_DEFAULT_REGION
+        accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+        secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+        sessionToken: ENV.AWS_SESSION_TOKEN,
+        region: ENV.AWS_DEFAULT_REGION
       };
     }
   }
 
-  if (_conf.fs) {
-    const profile: string = opts.profile || env.AWS_PROFILE || _conf.profile;
+  if (fs) {
+    const _profile: string = profile || ENV.AWS_PROFILE;
+    const _credentialsFile: string =
+      credentialsFile || ENV.AWS_SHARED_CREDENTIALS_FILE;
+    const _configFile: string = configFile || ENV.AWS_CONFIG_FILE;
 
-    const credsFile: string =
-      opts.sharedCredentialsFile ||
-      env.AWS_SHARED_CREDENTIALS_FILE ||
-      _conf.sharedCredentialsFile;
+    const creds: { [key: string]: any } = parse(_credentialsFile);
+    const config: { [key: string]: any } = parse(_configFile);
 
-    const configFile: string =
-      opts.configFile || env.AWS_CONFIG_FILE || _conf.configFile;
-
-    const creds: { [key: string]: any } = parse(credsFile);
-    const config: { [key: string]: any } = parse(configFile);
-
-    creds[profile] = creds[profile] || {};
-    config[profile] = config[profile] || {};
+    creds[_profile] = creds[_profile] || {};
+    config[_profile] = config[_profile] || {};
 
     return {
-      ...config[profile],
-      ...creds[profile],
+      ...config[_profile],
+      ...creds[_profile],
       accessKeyId:
-        env.AWS_ACCESS_KEY_ID ||
-        creds[profile].accessKeyId ||
-        config[profile].accessKeyId,
+        ENV.AWS_ACCESS_KEY_ID ||
+        creds[_profile].accessKeyId ||
+        config[_profile].accessKeyId,
       secretAccessKey:
-        env.AWS_SECRET_ACCESS_KEY ||
-        creds[profile].secretAccessKey ||
-        config[profile].secretAccessKey,
+        ENV.AWS_SECRET_ACCESS_KEY ||
+        creds[_profile].secretAccessKey ||
+        config[_profile].secretAccessKey,
       sessionToken:
-        env.AWS_SESSION_TOKEN ||
-        creds[profile].sessionToken ||
-        config[profile].sessionToken,
+        ENV.AWS_SESSION_TOKEN ||
+        creds[_profile].sessionToken ||
+        config[_profile].sessionToken,
       region:
-        env.AWS_DEFAULT_REGION ||
-        creds[profile].region ||
-        creds[profile].default_region ||
-        config[profile].region ||
-        config[profile].default_region
+        ENV.AWS_DEFAULT_REGION ||
+        creds[_profile].region ||
+        creds[_profile].default_region ||
+        config[_profile].region ||
+        config[_profile].default_region
     };
   }
 

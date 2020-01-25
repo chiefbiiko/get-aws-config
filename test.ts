@@ -17,7 +17,7 @@ test({
 test({
   name: "allows providing custom credentials file path in args or env",
   fn() {
-    const got = get({ sharedCredentialsFile: "./test_credentials" });
+    const got = get({ credentialsFile: "./test_credentials" });
 
     assertEquals(got.accessKeyId, "YOUR_AWS_ACCESS_KEY_ID");
   }
@@ -27,7 +27,7 @@ test({
   name: "allows loading specific profiles",
   fn() {
     const got = get({
-      sharedCredentialsFile: "./test_credentials",
+      credentialsFile: "./test_credentials",
       profile: "project1"
     });
 
@@ -39,7 +39,7 @@ test({
   name: "the credentials file has precedence over the config file",
   fn() {
     const got = get({
-      sharedCredentialsFile: "./test_credentials",
+      credentialsFile: "./test_credentials",
       configFile: "./test_config"
     });
 
@@ -52,7 +52,7 @@ test({
   name: "parsing handles comments and blank lines",
   fn() {
     const got = get({
-      sharedCredentialsFile: "./test_credentials",
+      credentialsFile: "./test_credentials",
       configFile: "./test_config"
     });
 
@@ -66,7 +66,7 @@ test({
   name: "supports credentials/config named profile formats all over",
   fn() {
     const got = get({
-      sharedCredentialsFile: "./test_credentials",
+      credentialsFile: "./test_credentials",
       configFile: "./test_config",
       profile: "project2"
     });
