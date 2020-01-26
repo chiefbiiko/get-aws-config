@@ -10,20 +10,33 @@ export interface GetOptions {
 /** Home path. */
 const HOME: string = Deno.dir("home");
 
+/** Line delimiter. */
+const NEW_LINE_REGEX: RegExp = /\r?\n/;
+
 /** Named profile extractor. */
 const PROFILE_REGEXP: RegExp = /^\[\s*(?:profile)?\s*([^\s]*)\s*\].*$/i;
 
-/** Detecting outter quotes.*/
-const QUOTE_REGEXP: RegExp = /^["']["']$/;
+/** Quote extractor. */
+const QUOTE_REGEXP: RegExp = /(^\s*["']?)|(["']?\s*$)/g;
 
 /** Shared decoder. */
 const decoder: TextDecoder = new TextDecoder();
+
+/** Bike-shed file existence check. */
+function fileExistsSync(file: string): boolean {
+  try {
+    Deno.statSync(file);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 /** Normalizes config keys (from snake to camel case). */
 function normalizeKey(key: string): string {
   return key
     .toLowerCase()
-    .replace(/^aws_/, "")
+    .replace("aws_", "")
     .split("_")
     .map((part: string, i: number): string =>
       i === 0 ? part : `${part[0].toUpperCase()}${part.slice(1)}`
@@ -33,16 +46,13 @@ function normalizeKey(key: string): string {
 
 /** Parses config and credential files. */
 function parse(file: string) {
-  // making sure the file exists
-  try {
-    Deno.statSync(file);
-  } catch (_) {
+  if (!fileExistsSync(file)) {
     return {};
   }
 
   return decoder
     .decode(Deno.readFileSync(file))
-    .split(/\r?\n/)
+    .split(NEW_LINE_REGEX)
     .map((line: string): string => line.trim())
     .filter((line: string): boolean => line && !line.startsWith("#"))
     .reduce(
@@ -61,9 +71,7 @@ function parse(file: string) {
         } else {
           const [key, val]: string[] = line
             .split("=")
-            .map((part: string): string =>
-              part.trim().replace(QUOTE_REGEXP, "")
-            );
+            .map((part: string): string => part.replace(QUOTE_REGEXP, ""));
 
           acc[newProfile || oldProfile][normalizeKey(key)] = val;
         }
@@ -100,35 +108,36 @@ export function get({
 
   if (fs) {
     const _profile: string = profile || ENV.AWS_PROFILE;
-    const _credentialsFile: string =
-      credentialsFile || ENV.AWS_SHARED_CREDENTIALS_FILE;
-    const _configFile: string = configFile || ENV.AWS_CONFIG_FILE;
 
-    const creds: { [key: string]: any } = parse(_credentialsFile);
-    const config: { [key: string]: any } = parse(_configFile);
+    const credentials: { [key: string]: any } = parse(
+      credentialsFile || ENV.AWS_SHARED_CREDENTIALS_FILE
+    );
+    const config: { [key: string]: any } = parse(
+      configFile || ENV.AWS_CONFIG_FILE
+    );
 
-    creds[_profile] = creds[_profile] || {};
+    credentials[_profile] = credentials[_profile] || {};
     config[_profile] = config[_profile] || {};
 
     return {
       ...config[_profile],
-      ...creds[_profile],
+      ...credentials[_profile],
       accessKeyId:
         ENV.AWS_ACCESS_KEY_ID ||
-        creds[_profile].accessKeyId ||
+        credentials[_profile].accessKeyId ||
         config[_profile].accessKeyId,
       secretAccessKey:
         ENV.AWS_SECRET_ACCESS_KEY ||
-        creds[_profile].secretAccessKey ||
+        credentials[_profile].secretAccessKey ||
         config[_profile].secretAccessKey,
       sessionToken:
         ENV.AWS_SESSION_TOKEN ||
-        creds[_profile].sessionToken ||
+        credentials[_profile].sessionToken ||
         config[_profile].sessionToken,
       region:
         ENV.AWS_DEFAULT_REGION ||
-        creds[_profile].region ||
-        creds[_profile].default_region ||
+        credentials[_profile].region ||
+        credentials[_profile].default_region ||
         config[_profile].region ||
         config[_profile].default_region
     };
