@@ -10,14 +10,14 @@ export interface GetOptions {
 /** Home path. */
 const HOME: string = Deno.dir("home");
 
-/** Named profile prefix used in config files. */
-const PROFILE_REGEXP: RegExp = /^\s*profile\s*/i;
+/** Named profile extractor. */
+const PROFILE_REGEXP: RegExp = /^\[\s*(?:profile)?\s*([^\s]*)\s*\].*$/i;
 
 /** Detecting outter quotes.*/
 const QUOTE_REGEXP: RegExp = /^["']["']$/;
 
 /** Shared decoder. */
-const dcdr: TextDecoder = new TextDecoder();
+const decoder: TextDecoder = new TextDecoder();
 
 /** Normalizes config keys (from snake to camel case). */
 function normalizeKey(key: string): string {
@@ -40,7 +40,7 @@ function parse(file: string) {
     return {};
   }
 
-  return dcdr
+  return decoder
     .decode(Deno.readFileSync(file))
     .split(/\r?\n/)
     .map((line: string): string => line.trim())
@@ -53,10 +53,7 @@ function parse(file: string) {
         let newProfile: string;
 
         if (line.startsWith("[")) {
-          newProfile = line
-            .slice(1, line.length - 1)
-            .trim()
-            .replace(PROFILE_REGEXP, "");
+          newProfile = line.replace(PROFILE_REGEXP, "$1");
 
           if (!acc.hasOwnProperty(newProfile)) {
             acc[newProfile] = {};
@@ -85,23 +82,20 @@ export function get({
   env = true,
   fs = true
 }: GetOptions = {}): { [key: string]: string } {
-  let ENV: { [key: string]: any } = {};
+  const ENV: { [key: string]: any } = env ? Deno.env() : {};
 
-  if (env) {
-    ENV = Deno.env();
-
-    if (
-      ENV.AWS_ACCESS_KEY_ID &&
-      ENV.AWS_SECRET_ACCESS_KEY &&
-      ENV.AWS_DEFAULT_REGION
-    ) {
-      return {
-        accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-        secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-        sessionToken: ENV.AWS_SESSION_TOKEN,
-        region: ENV.AWS_DEFAULT_REGION
-      };
-    }
+  if (
+    env &&
+    ENV.AWS_ACCESS_KEY_ID &&
+    ENV.AWS_SECRET_ACCESS_KEY &&
+    ENV.AWS_DEFAULT_REGION
+  ) {
+    return {
+      accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+      secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+      sessionToken: ENV.AWS_SESSION_TOKEN,
+      region: ENV.AWS_DEFAULT_REGION
+    };
   }
 
   if (fs) {

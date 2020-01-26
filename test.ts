@@ -77,4 +77,4 @@ test({
   }
 });
 
-runIfMain(import.meta, { only: /formats/ });
+runIfMain(import.meta);
