@@ -5,7 +5,9 @@ import {
   runIfMain
 } from "https://deno.land/std/testing/mod.ts";
 
-Deno.env().AWS_PROFILE = "default";
+const ENV = Deno.env();
+
+ENV.AWS_PROFILE = "default";
 
 test({
   name: "returns an empty object if fs and env access are both disabled",
@@ -70,6 +72,21 @@ test({
       configFile: "./test_config",
       profile: "project2"
     });
+
+    assertEquals(got.was, "🦜");
+    assertEquals(got.now, "🔮");
+    assertEquals(got.key, "🔑");
+  }
+});
+
+test({
+  name: "getting it with no config argument",
+  fn() {
+    ENV.AWS_SHARED_CREDENTIALS_FILE = "./test_credentials";
+    ENV.AWS_CONFIG_FILE = "./test_config";
+    ENV.AWS_PROFILE = "project2";
+
+    const got = get();
 
     assertEquals(got.was, "🦜");
     assertEquals(got.now, "🔮");

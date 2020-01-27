@@ -83,17 +83,19 @@ function parse(file: string) {
 }
 
 /** Derives aws config from the environment and/or filesystem. */
-export function get({
-  profile = "default",
-  credentialsFile = `${HOME}/.aws/credentials`,
-  configFile = `${HOME}/.aws/config`,
-  env = true,
-  fs = true
-}: GetOptions = {}): { [key: string]: string } {
-  const ENV: { [key: string]: any } = env ? Deno.env() : {};
+export function get(opts: GetOptions = {}): { [key: string]: string } {
+  const _opts = { ...opts };
+
+  _opts.env = _opts.env !== false;
+  _opts.fs = _opts.fs !== false;
+  _opts.profile = _opts.profile || "default";
+  _opts.credentialsFile = _opts.credentialsFile || `${HOME}/.aws/credentials`;
+  _opts.configFile = _opts.configFile || `${HOME}/.aws/config`;
+
+  const ENV: { [key: string]: any } = _opts.env ? Deno.env() : {};
 
   if (
-    env &&
+    _opts.env &&
     ENV.AWS_ACCESS_KEY_ID &&
     ENV.AWS_SECRET_ACCESS_KEY &&
     ENV.AWS_DEFAULT_REGION
@@ -106,15 +108,17 @@ export function get({
     };
   }
 
-  if (fs) {
-    const _profile: string = profile || ENV.AWS_PROFILE;
-
+  if (_opts.fs) {
     const credentials: { [key: string]: any } = parse(
-      credentialsFile || ENV.AWS_SHARED_CREDENTIALS_FILE
+      opts.credentialsFile ||
+        ENV.AWS_SHARED_CREDENTIALS_FILE ||
+        _opts.credentialsFile
     );
     const config: { [key: string]: any } = parse(
-      configFile || ENV.AWS_CONFIG_FILE
+      opts.configFile || ENV.AWS_CONFIG_FILE || _opts.configFile
     );
+
+    const _profile: string = opts.profile || ENV.AWS_PROFILE || _opts.profile;
 
     credentials[_profile] = credentials[_profile] || {};
     config[_profile] = config[_profile] || {};
@@ -136,10 +140,10 @@ export function get({
         config[_profile].sessionToken,
       region:
         ENV.AWS_DEFAULT_REGION ||
-        credentials[_profile].region ||
-        credentials[_profile].default_region ||
         config[_profile].region ||
-        config[_profile].default_region
+        config[_profile].default_region ||
+        credentials[_profile].region ||
+        credentials[_profile].default_region
     };
   }
 

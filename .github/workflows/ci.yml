@@ -15,4 +15,4 @@ jobs:
       - name: install deno
         uses: denolib/setup-deno@v1.1.0
       - name: run tests
-        run: deno test --allow-env --allow-write --allow-net
+        run: deno run --allow-env --allow-read test.ts

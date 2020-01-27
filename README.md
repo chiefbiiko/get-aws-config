@@ -30,6 +30,8 @@ export interface GetOptions {
 }
 ```
 
+> Note: If you are disabling environment lookup, i.e. `{ env: false }`, you still need to `deno run` with the `--allow-env` flag set. That is because the module calls `Deno.dir("home")` in order to determine the machine's home path and default AWS config and credentials file location.
+
 ## License
 
 [MIT](./LICENSE)
