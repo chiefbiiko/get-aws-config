@@ -23,7 +23,7 @@ Derive configuration from the environment, the credentials file, and config file
 ```ts
 export interface GetOptions {
   profile?: string; // which profile to load [default]
-  sharedCredentialsFile?: string; // credentials file path [~/.aws/credentials]
+  credentialsFile?: string; // credentials file path [~/.aws/credentials]
   configFile?: string; // config file path [~/.aws/config]
   env?: boolean; // whether to check environment [true]
   fs?: boolean; // whether to check file system [true]
