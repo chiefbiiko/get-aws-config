@@ -139,6 +139,7 @@ export function get(opts: GetOptions = {}): { [key: string]: string } {
         credentials[_profile].sessionToken ||
         config[_profile].sessionToken,
       region:
+        ENV.AWS_REGION ||
         ENV.AWS_DEFAULT_REGION ||
         config[_profile].region ||
         config[_profile].default_region ||
