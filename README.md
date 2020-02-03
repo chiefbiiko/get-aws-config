@@ -10,6 +10,14 @@ Get AWS config and credentials following the "official" AWS CLI strategy.
 import { get } from "https://denopkg.com/chiefbiiko/get-aws-config/mod.ts";
 
 const got = get();
+// {
+//   accessKeyId: "accessKeyId",
+//   secretAccessKey: "secretAccessKey",
+//   sessionToken: "sessionToken",
+//   region: "us-east-1",
+//   output: "json",
+//   moreConfig: "bla"
+// }
 ```
 
 ## API
