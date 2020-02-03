@@ -34,6 +34,7 @@ test({
     });
 
     assertEquals(got.accessKeyId, "ANOTHER_AWS_ACCESS_KEY_ID");
+    assertEquals(got.secretAccessKey, "ANOTHER_AWS_SECRET_ACCESS_KEY");
   }
 });
 
@@ -46,6 +47,7 @@ test({
     });
 
     assertEquals(got.accessKeyId, "YOUR_AWS_ACCESS_KEY_ID");
+    assertEquals(got.secretAccessKey, "YOUR_AWS_SECRET_ACCESS_KEY");
     assertEquals(got.someOtherConfig, "FRAUD");
   }
 });
