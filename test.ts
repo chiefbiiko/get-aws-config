@@ -3,7 +3,7 @@ import {
   assertEquals,
   test,
   runIfMain
-} from "https://deno.land/std/testing/mod.ts";
+} from "https://deno.land/std@v0.30.0/testing/mod.ts";
 
 const ENV = Deno.env();
 
