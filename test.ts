@@ -1,22 +1,18 @@
+import { assertEquals } from "https://deno.land/std@v0.34.0/testing/asserts.ts";
 import { get } from "./mod.ts";
-import {
-  assertEquals,
-  test,
-  runIfMain
-} from "https://deno.land/std@v0.30.0/testing/mod.ts";
 
 const ENV = Deno.env();
 
 ENV.AWS_PROFILE = "default";
 
-test({
+Deno.test({
   name: "returns an empty object if fs and env access are both disabled",
   fn() {
     assertEquals(get({ env: false, fs: false }), {});
   }
 });
 
-test({
+Deno.test({
   name: "allows providing custom credentials file path in args or env",
   fn() {
     const got = get({ credentialsFile: "./test_credentials" });
@@ -25,7 +21,7 @@ test({
   }
 });
 
-test({
+Deno.test({
   name: "allows loading specific profiles",
   fn() {
     const got = get({
@@ -38,7 +34,7 @@ test({
   }
 });
 
-test({
+Deno.test({
   name: "the credentials file has precedence over the config file",
   fn() {
     const got = get({
@@ -52,7 +48,7 @@ test({
   }
 });
 
-test({
+Deno.test({
   name: "parsing handles comments and blank lines",
   fn() {
     const got = get({
@@ -66,7 +62,7 @@ test({
   }
 });
 
-test({
+Deno.test({
   name: "supports credentials/config named profile formats all over",
   fn() {
     const got = get({
@@ -81,7 +77,7 @@ test({
   }
 });
 
-test({
+Deno.test({
   name: "getting it with no config argument",
   fn() {
     ENV.AWS_SHARED_CREDENTIALS_FILE = "./test_credentials";
@@ -95,5 +91,3 @@ test({
     assertEquals(got.key, "🔑");
   }
 });
-
-runIfMain(import.meta);

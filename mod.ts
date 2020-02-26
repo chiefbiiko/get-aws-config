@@ -8,7 +8,7 @@ export interface GetOptions {
 }
 
 /** Home path. */
-const HOME: string = Deno.dir("home");
+const HOME: string = Deno.dir("home") ?? "";
 
 /** Line delimiter. */
 const NEW_LINE_REGEX: RegExp = /\r?\n/;
@@ -38,8 +38,10 @@ function normalizeKey(key: string): string {
     .toLowerCase()
     .replace("aws_", "")
     .split("_")
-    .map((part: string, i: number): string =>
-      i === 0 ? part : `${part[0].toUpperCase()}${part.slice(1)}`
+    .map(
+      (part: string, i: number): string => i === 0
+        ? part
+        : `${part[0].toUpperCase()}${part.slice(1)}`
     )
     .join("");
 }
@@ -54,13 +56,13 @@ function parse(file: string) {
     .decode(Deno.readFileSync(file))
     .split(NEW_LINE_REGEX)
     .map((line: string): string => line.trim())
-    .filter((line: string): boolean => line && !line.startsWith("#"))
+    .filter((line: string): boolean => !!line && !line.startsWith("#"))
     .reduce(
       (
-        [oldProfile, acc]: [string, { [key: string]: any }],
+        [oldProfile, acc]: [string, { [key: string]: any; }],
         line: string
-      ): [string, { [key: string]: any }] => {
-        let newProfile: string;
+      ): [string, { [key: string]: any; }] => {
+        let newProfile: string = "";
 
         if (line.startsWith("[")) {
           newProfile = line.replace(PROFILE_REGEXP, "$1");
@@ -83,10 +85,10 @@ function parse(file: string) {
 }
 
 /** Derives aws config from the environment and/or filesystem. */
-export function get(opts: GetOptions = {}): { [key: string]: string } {
+export function get(opts: GetOptions = {}): { [key: string]: string; } {
   const _opts = { ...opts, env: opts.env !== false };
-  const ENV: { [key: string]: any } = _opts.env ? Deno.env() : {};
-  
+  const ENV: { [key: string]: any; } = _opts.env ? Deno.env() : {};
+
   _opts.fs = _opts.fs !== false;
   _opts.profile = _opts.profile || ENV.AWS_PROFILE || "default";
   _opts.credentialsFile = _opts.credentialsFile || `${HOME}/.aws/credentials`;
@@ -107,12 +109,12 @@ export function get(opts: GetOptions = {}): { [key: string]: string } {
   }
 
   if (_opts.fs) {
-    const credentials: { [key: string]: any } = parse(
+    const credentials: { [key: string]: any; } = parse(
       opts.credentialsFile ||
         ENV.AWS_SHARED_CREDENTIALS_FILE ||
         _opts.credentialsFile
     );
-    const config: { [key: string]: any } = parse(
+    const config: { [key: string]: any; } = parse(
       opts.configFile || ENV.AWS_CONFIG_FILE || _opts.configFile
     );
 
@@ -124,20 +126,16 @@ export function get(opts: GetOptions = {}): { [key: string]: string } {
     return {
       ...config[_profile],
       ...credentials[_profile],
-      accessKeyId:
-        ENV.AWS_ACCESS_KEY_ID ||
+      accessKeyId: ENV.AWS_ACCESS_KEY_ID ||
         credentials[_profile].accessKeyId ||
         config[_profile].accessKeyId,
-      secretAccessKey:
-        ENV.AWS_SECRET_ACCESS_KEY ||
+      secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY ||
         credentials[_profile].secretAccessKey ||
         config[_profile].secretAccessKey,
-      sessionToken:
-        ENV.AWS_SESSION_TOKEN ||
+      sessionToken: ENV.AWS_SESSION_TOKEN ||
         credentials[_profile].sessionToken ||
         config[_profile].sessionToken,
-      region:
-        ENV.AWS_REGION ||
+      region: ENV.AWS_REGION ||
         ENV.AWS_DEFAULT_REGION ||
         config[_profile].region ||
         config[_profile].default_region ||
