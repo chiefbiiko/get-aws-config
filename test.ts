@@ -1,9 +1,7 @@
 import { assertEquals } from "https://deno.land/std@v0.34.0/testing/asserts.ts";
 import { get } from "./mod.ts";
 
-const ENV = Deno.env();
-
-ENV.AWS_PROFILE = "default";
+Deno.env.set("AWS_PROFILE", "default")
 
 Deno.test({
   name: "returns an empty object if fs and env access are both disabled",
@@ -80,9 +78,9 @@ Deno.test({
 Deno.test({
   name: "getting it with no config argument",
   fn() {
-    ENV.AWS_SHARED_CREDENTIALS_FILE = "./test_credentials";
-    ENV.AWS_CONFIG_FILE = "./test_config";
-    ENV.AWS_PROFILE = "project2";
+    Deno.env.set("AWS_SHARED_CREDENTIALS_FILE", "./test_credentials");
+    Deno.env.set("AWS_CONFIG_FILE", "./test_config")
+    Deno.env.set("AWS_PROFILE", "project2");
 
     const got = get();
 
