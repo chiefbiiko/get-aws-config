@@ -87,7 +87,7 @@ function parse(file: string) {
 /** Derives aws config from the environment and/or filesystem. */
 export function get(opts: GetOptions = {}): { [key: string]: string; } {
   const _opts = { ...opts, env: opts.env !== false };
-  const ENV: { [key: string]: any; } = _opts.env ? Deno.env() : {};
+  const ENV: { [key: string]: any; } = _opts.env ? Deno.env.toObject() : {};
 
   _opts.fs = _opts.fs !== false;
   _opts.profile = _opts.profile || ENV.AWS_PROFILE || "default";
