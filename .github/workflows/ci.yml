@@ -15,4 +15,4 @@ jobs:
       - name: install deno
         uses: denolib/setup-deno@v1.3.0
       - name: run tests
-        run: deno test --unstable --allow-env --allow-read
+        run: deno test --allow-env --allow-read

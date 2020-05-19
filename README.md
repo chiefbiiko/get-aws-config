@@ -6,8 +6,8 @@ Get AWS config and credentials following the "official" AWS CLI strategy.
 
 ## Usage
 
-Make sure you are running `deno` with the `--unstable`, `--allow-env`, and `--allow-read` flags as this module 
-depends on `Deno.dir("home")` (the unstable part), filesystem and environment access.
+Make sure you are running `deno` with the `--allow-env` and/or `--allow-read` flags as this module 
+depends on filesystem and/or environment access.
 
 ```ts
 import { get } from "https://denopkg.com/chiefbiiko/get-aws-config/mod.ts";
@@ -40,8 +40,6 @@ export interface GetOptions {
   fs?: boolean; // whether to check file system [true]
 }
 ```
-
-> Note: If you are disabling environment lookup, i.e. `{ env: false }`, you still need to `deno run` with the `--unstable --allow-env` flags set. That is because the module calls `Deno.dir("home")` in order to determine the machine's home path and default AWS config and credentials file location.
 
 ## License
 
