@@ -8,7 +8,7 @@ export interface GetOptions {
 }
 
 /** Home path. */
-const HOME: string = Deno.dir("home") ?? "";
+const HOME: string = Deno.env.get("HOME") ?? "";
 
 /** Line delimiter. */
 const NEW_LINE_REGEX: RegExp = /\r?\n/;
